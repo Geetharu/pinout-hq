@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-deep-slate: #0F172A;
+  --color-silicon-charcoal: #1E293B;
+  --color-crisp-white: #F8FAFC;
+  --color-muted-ash: #94A3B8;
+  --color-voltage-cyan: #00E5FF;
+  --color-signal-green: #10B981;
+  --color-short-circuit-red: #F43F5E;
+}
+
+body {
+  background-color: #0F172A;
+  color: #F8FAFC;
+}
