@@ -1,0 +1,15 @@
+# Ignore all node_modules everywhere
+node_modules/
+**/node_modules/
+
+# Ignore build outputs
+dist/
+.next/
+out/
+build/
+
+# Ignore environment secrets and logs
+.env
+*.env
+*.env.*
+*.log
