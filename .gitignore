@@ -2,14 +2,23 @@
 node_modules/
 **/node_modules/
 
-# Ignore build outputs
+# Ignore build and compilation outputs
 dist/
 .next/
 out/
 build/
+*.tsbuildinfo
 
 # Ignore environment secrets and logs
 .env
 *.env
 *.env.*
 *.log
+
+# Ignore cloud deployment and cache folders
+.vercel/
+.turbo/
+
+# Ignore OS and editor system files
+.DS_Store
+Thumbs.db
