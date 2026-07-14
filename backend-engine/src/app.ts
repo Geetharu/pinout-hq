@@ -4,6 +4,7 @@ import { env } from './config/env';
 import { connectDatabase } from './config/db';
 import { connectRedis } from './config/redis';
 import { createMcpRouter } from './mcp/server';
+import componentRoutes from './routes/componentRoutes';
 
 const app: Application = express();
 
@@ -12,6 +13,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/mcp', createMcpRouter());
+app.use('/api/v1/components', componentRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({

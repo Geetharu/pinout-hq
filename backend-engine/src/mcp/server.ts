@@ -4,7 +4,7 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { InjectHardwareInputSchema, executeDatabaseInjection } from './tools/injectDatabase';
-import { ScrapeVendorInputSchema, executeVendorScrape } from './tools/scrapeVendor';
+import { ScrapeVendorInputSchema, executeVendorScrape } from '../services/scrapeVendor';
 
 export const createMcpRouter = () => {
   const router = express.Router();
