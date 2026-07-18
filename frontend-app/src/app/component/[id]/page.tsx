@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Metadata } from "next";
+import ReactMarkdown from "react-markdown";
 import { Logo } from "@/components/Logo";
 
 interface HardwareComponent {
@@ -15,10 +17,7 @@ interface HardwareComponent {
 async function getComponentDetails(id: string): Promise<HardwareComponent | null> {
   try {
     const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
-    const res = await fetch(`${baseUrl}/api/v1/components/${id}`, {
-      cache: 'no-store',
-    });
-
+    const res = await fetch(`${baseUrl}/api/v1/components/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const json = await res.json();
     return json.data;
@@ -26,6 +25,18 @@ async function getComponentDetails(id: string): Promise<HardwareComponent | null
     console.error('Failed to fetch component details:', error);
     return null;
   }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const item = await getComponentDetails(id);
+  if (!item) return { title: "Hardware Not Found | PinoutHQ" };
+
+  const seo = item.specifications?.seoArticle;
+  const titleText = seo?.title || `${item.name} Review, Pinout & Specs`;
+  const descText = seo?.metaDescription || `Complete engineering review and specification guide for ${item.name} by ${item.vendor}.`;
+
+  return { title: `${titleText} | PinoutHQ`, description: descText };
 }
 
 export default async function ComponentDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -44,24 +55,38 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
   }
 
   const price = item.specifications?.scrapedPrice || "49.99";
+  const currency = item.specifications?.currency || "USD";
   const sourceUrl = item.specifications?.sourceUrl || "#";
+  const pins = item.pinCount || 38;
 
-  // Safely extract our new 1000x SEO data or provide a clean fallback structure
   const seo = item.specifications?.seoArticle || {
-    title: `Complete Engineering Guide & Pinout for ${item.name}`,
-    architectureOverview: `The ${item.name} from ${item.vendor} is designed for high-performance IoT applications and embedded systems development. Featuring robust voltage regulation and integrated communications, this module is ideal for rapid prototyping and enterprise scaling.`,
-    pinoutAndInterface: `When integrating this module into your circuit design, verify all voltage reference pins and ensure proper grounding across your printed circuit board. Always consult the official datasheet before connecting high current loads.`,
-    powerAndThermal: `Ensure your power supply rail can deliver adequate clean current during RF transmission or high-load sensor polling. Placing decoupling capacitors near the power pins is highly recommended.`,
-    firmwareCode: `// Boilerplate code will populate on next sync cycle\n#include <Arduino.h>\nvoid setup() { Serial.begin(115200); }\nvoid loop() {}`,
-    troubleshooting: [],
-    faqs: []
+    title: `Why the ${item.name} is an Essential Module for Hardware Developers`,
+    metaDescription: `Engineering review and specifications for ${item.name}.`,
+    articleMarkdown: `## Executive Summary & Architecture\nThe ${item.name} by ${item.vendor} stands out as a dependable hardware building block for modern embedded engineering and IoT development. Designed to bridge rapid prototyping environments with industrial edge computing, this component delivers exceptional processing stability.\n\n## Pinout Routing and Interface Design\nInterfacing smoothly with the ${item.name} requires strict adherence to its operating voltage envelope and communication bus timing. Utilizing standard communication buses ensures seamless compatibility across modern microcontroller families.\n\n## Frequently Asked Questions\n### What is the primary logic voltage of the ${item.name}?\nThis module is engineered primarily for standard low voltage logic operation. Interfacing directly with high voltage lines without logic level shifters can permanently damage the internal silicon gate oxides.`,
+    tags: [item.name, "Embedded Systems", "IoT Development", "Pinout Guide"]
+  };
+
+  const productSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": item.name,
+    "description": seo.metaDescription,
+    "brand": { "@type": "Brand", "name": item.vendor },
+    "offers": {
+      "@type": "Offer",
+      "url": sourceUrl,
+      "priceCurrency": currency,
+      "price": price,
+      "availability": item.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+    }
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50 p-4 md:p-12 flex flex-col items-center">
-      
+    <main className="min-h-screen bg-slate-950 text-slate-50 p-4 md:p-12 flex flex-col items-center scroll-smooth">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
+
       {/* Top Navigation Bar */}
-      <div className="w-full max-w-5xl flex items-center justify-between border-b border-slate-800 pb-6 mb-8">
+      <div className="w-full max-w-5xl flex items-center justify-between border-b border-slate-800 pb-6 mb-8 sticky top-0 bg-slate-950/90 backdrop-blur-md z-50">
         <Link href="/" className="flex items-center gap-3 group">
           <Logo className="w-8 h-8 group-hover:scale-105 transition-transform" />
           <span className="font-mono font-bold tracking-tight text-lg text-slate-200 group-hover:text-cyan-400 transition-colors">
@@ -70,7 +95,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         </Link>
         <div className="flex items-center gap-4">
           <span className="hidden sm:inline-block text-[11px] font-mono px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-400">
-            Docs v2.4
+            AI Editorial v5.0
           </span>
           <Link href="/" className="text-xs font-mono text-cyan-400 hover:underline">
             &larr; Back to Matrix
@@ -78,25 +103,23 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
         </div>
       </div>
 
-      {/* Main Grid: Blog Reading Column + Sticky Monetization Column */}
+      {/* Main Grid: Magazine Reading Column + Sticky Monetization Column */}
       <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-10">
         
-        {/* Left 2 Columns: Long-Form Technical Masterclass Article */}
-        <div className="lg:col-span-2 space-y-10">
+        {/* Left 2 Columns: Dynamic Markdown Tech Journalism Layout */}
+        <div className="lg:col-span-2 space-y-8">
           
           {/* Article Header & Badges */}
-          <div className="space-y-4">
+          <div className="space-y-4 border-b border-slate-800/80 pb-6">
             <div className="flex flex-wrap items-center gap-2.5">
-              <span className="px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono text-cyan-400 uppercase tracking-wide">
+              <span className="px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono text-cyan-400 uppercase">
                 {item.category}
               </span>
               <span className="px-3 py-1 rounded bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300">
                 Vendor: {item.vendor}
               </span>
               <span className={`px-3 py-1 rounded text-xs font-mono font-semibold ${
-                item.inStock 
-                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                item.inStock ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
               }`}>
                 {item.inStock ? 'IN STOCK' : 'OUT OF STOCK'}
               </span>
@@ -105,25 +128,17 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-100 leading-tight">
               {seo.title || item.name}
             </h1>
-            <p className="text-sm font-mono text-slate-400">
-              Published by PinoutHQ Engineering Team • Automated Live Feed
-            </p>
+            <div className="flex items-center gap-4 text-xs font-mono text-slate-400">
+              <span>By PinoutHQ Editorial Team</span>
+              <span>•</span>
+              <span>10 Min Engineering Read</span>
+            </div>
           </div>
 
-          {/* Section 1: Architecture Overview */}
-          <section className="space-y-4 text-slate-300 leading-relaxed font-sans text-base md:text-lg">
+          {/* Section 1: Technical Specification Matrix */}
+          <section className="space-y-4 pt-2">
             <h2 className="text-xl md:text-2xl font-bold text-slate-100 border-b border-slate-800 pb-2 font-mono">
-              1. Architecture & System Overview
-            </h2>
-            <p className="text-slate-300">
-              {seo.architectureOverview}
-            </p>
-          </section>
-
-          {/* Section 2: Complete Hardware Specifications Matrix Table */}
-          <section className="space-y-4">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-100 border-b border-slate-800 pb-2 font-mono">
-              2. Technical Specification Matrix
+              Technical Specification Matrix
             </h2>
             <div className="bg-slate-900/80 rounded-xl border border-slate-800 overflow-hidden font-mono text-sm shadow-xl">
               <div className="grid grid-cols-2 bg-slate-800/60 p-3.5 border-b border-slate-800 text-xs font-bold text-cyan-400 uppercase tracking-wider">
@@ -133,7 +148,7 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
               <div className="divide-y divide-slate-800/80">
                 <div className="grid grid-cols-2 p-3.5 hover:bg-slate-800/30 transition">
                   <span className="text-slate-400">Total Pin Count</span>
-                  <span className="text-slate-200 font-bold">{item.pinCount || 'Standard DIP/SMD'}</span>
+                  <span className="text-slate-200 font-bold">{pins} Pins (Standard Layout)</span>
                 </div>
                 {item.specifications && Object.entries(item.specifications).map(([key, value]) => {
                   if (key === 'sourceUrl' || key === 'lastScrapedAt' || key === 'seoArticle' || key === 'scrapedPrice' || key === 'currency') return null;
@@ -150,103 +165,99 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             </div>
           </section>
 
-          {/* Section 3: Pinout Mapping & Bus Protocols */}
-          <section className="space-y-4 text-slate-300 leading-relaxed font-sans text-base md:text-lg">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-100 border-b border-slate-800 pb-2 font-mono">
-              3. Pinout Mapping & Bus Interfaces
-            </h2>
-            <p>
-              {seo.pinoutAndInterface}
-            </p>
-          </section>
+          {/* Dynamic Markdown Article Body (No Rigid Templates!) */}
+          <article className="prose prose-invert max-w-none text-slate-300 font-sans leading-relaxed space-y-6">
+            <ReactMarkdown
+              components={{
+                h2: ({ node, ...props }) => (
+                  <h2 className="text-2xl font-bold text-slate-100 font-mono border-b border-slate-800 pb-2 mt-10 mb-4" {...props} />
+                ),
+                h3: ({ node, ...props }) => (
+                  <h3 className="text-lg font-bold text-cyan-400 font-mono mt-6 mb-2" {...props} />
+                ),
+                p: ({ node, ...props }) => (
+                  <p className="text-base text-slate-300 leading-relaxed my-3" {...props} />
+                ),
+                ul: ({ node, ...props }) => (
+                  <ul className="list-disc list-inside space-y-2 text-slate-300 my-4 pl-2 font-mono text-sm" {...props} />
+                ),
+                code: ({ inline, ...props }: any) => 
+                  inline ? (
+                    <code className="bg-slate-900 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-800" {...props} />
+                  ) : (
+                    <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 my-6 shadow-2xl">
+                      <div className="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-800 font-mono text-xs text-slate-400">
+                        <span>PlatformIO / Arduino Code Harness</span>
+                        <span className="text-cyan-400">Ready to Compile</span>
+                      </div>
+                      <pre className="p-5 text-xs md:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed m-0 bg-transparent">
+                        <code {...props} />
+                      </pre>
+                    </div>
+                  )
+              }}
+            >
+              {seo.articleMarkdown}
+            </ReactMarkdown>
+          </article>
 
-          {/* Section 4: Power Rail & Thermal Warning Callout Box */}
-          <section className="space-y-4">
-            <h2 className="text-xl md:text-2xl font-bold text-slate-100 border-b border-slate-800 pb-2 font-mono">
-              4. Power Rail & Thermal Guidelines
-            </h2>
-            <div className="p-6 rounded-xl bg-amber-950/20 border border-amber-500/30 text-amber-200/90 space-y-3 font-sans text-base">
-              <div className="flex items-center gap-2 font-mono font-bold text-amber-400 text-sm uppercase tracking-wider">
-                <span>⚠️ Critical Hardware Warning</span>
+          {/* Categories and Tags Footer */}
+          <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span className="text-slate-500">Categories:</span>
+              <span className="text-cyan-400 hover:underline cursor-pointer">Hardware Reviews</span>,
+              <span className="text-cyan-400 hover:underline cursor-pointer">Microcontrollers</span>,
+              <span className="text-cyan-400 hover:underline cursor-pointer">IoT Guides</span>
+            </div>
+            
+            {seo.tags && (
+              <div className="flex flex-wrap gap-2">
+                {seo.tags.map((tag: string, i: number) => (
+                  <span key={i} className="px-2.5 py-1 rounded-md bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-400 hover:border-slate-700 transition">
+                    #{tag}
+                  </span>
+                ))}
               </div>
-              <p className="text-sm md:text-base leading-relaxed">
-                {seo.powerAndThermal}
+            )}
+          </div>
+
+          {/* Community Discussion & Comment Form Block */}
+          <div className="p-8 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-6 mt-12">
+            <div>
+              <h3 className="text-xl font-bold font-mono text-slate-100">
+                Join the Discussion
+              </h3>
+              <p className="text-xs font-mono text-slate-400 mt-1">
+                Have you integrated the {item.name} in your custom PCB or IoT project? Share your feedback and wiring tips below!
               </p>
             </div>
-          </section>
 
-          {/* Section 5: Autogenerated Firmware Code Snippet */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <h2 className="text-xl md:text-2xl font-bold text-slate-100 font-mono">
-                5. Reference Firmware Code (C++ / Arduino)
-              </h2>
-              <span className="text-xs font-mono text-slate-500">main.cpp</span>
-            </div>
-            <p className="text-sm text-slate-400">
-              Copy and paste this test harness directly into your PlatformIO or Arduino IDE environment to verify communication with the {item.name}:
-            </p>
-            <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-800 font-mono text-xs text-slate-400">
-                <span>PlatformIO / Arduino Test Harness</span>
-                <span className="text-cyan-400">Ready to Compile</span>
+            <form className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">Name *</label>
+                  <input type="text" placeholder="Engineer Name" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono" />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono text-slate-400 mb-1">Email *</label>
+                  <input type="email" placeholder="developer@company.com" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono" />
+                </div>
               </div>
-              <pre className="p-5 text-xs md:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed">
-                <code>{seo.firmwareCode}</code>
-              </pre>
-            </div>
-          </section>
-
-          {/* Section 6: Troubleshooting Matrix */}
-          {seo.troubleshooting && seo.troubleshooting.length > 0 && (
-            <section className="space-y-4">
-              <h2 className="text-xl md:text-2xl font-bold text-slate-100 border-b border-slate-800 pb-2 font-mono">
-                6. Hardware Troubleshooting Matrix
-              </h2>
-              <div className="grid grid-cols-1 gap-4">
-                {seo.troubleshooting.map((t: any, index: number) => (
-                  <div key={index} className="p-5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
-                    <h3 className="font-mono font-bold text-rose-400 text-sm flex items-center gap-2">
-                      <span>❌ Symptom:</span> {t.problem}
-                    </h3>
-                    <p className="text-xs font-mono text-slate-400">
-                      <span className="text-slate-300 font-semibold">Root Cause:</span> {t.cause}
-                    </p>
-                    <p className="text-xs font-mono text-emerald-400 bg-emerald-950/30 p-2.5 rounded border border-emerald-500/20 mt-2">
-                      <span className="font-bold">✅ Solution:</span> {t.solution}
-                    </p>
-                  </div>
-                ))}
+              <div>
+                <label className="block text-xs font-mono text-slate-400 mb-1">Comment *</label>
+                <textarea rows={4} placeholder="Share your hardware troubleshooting steps or project schematics..." className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono"></textarea>
               </div>
-            </section>
-          )}
-
-          {/* Section 7: SEO Rich-Snippet FAQ Accordion */}
-          {seo.faqs && seo.faqs.length > 0 && (
-            <section className="space-y-4 pt-4 border-t border-slate-800">
-              <h2 className="text-xl md:text-2xl font-bold text-slate-100 font-mono">
-                7. Frequently Asked Questions (FAQ)
-              </h2>
-              <div className="space-y-4">
-                {seo.faqs.map((faq: any, idx: number) => (
-                  <div key={idx} className="p-5 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2">
-                    <h3 className="font-mono font-bold text-slate-200 text-sm md:text-base">
-                      Q: {faq.question}
-                    </h3>
-                    <p className="text-sm text-slate-400 leading-relaxed font-sans">
-                      {faq.answer}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+              <button type="button" className="py-2.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs rounded-lg transition shadow-[0_0_15px_rgba(0,229,255,0.2)]">
+                Post Engineering Comment &rarr;
+              </button>
+            </form>
+          </div>
 
         </div>
 
         {/* Right Column: Sticky Monetization & Affiliate Checkout Card */}
         <div className="lg:col-span-1">
-          <div className="sticky top-8 p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-900/50 border border-cyan-500/30 shadow-2xl backdrop-blur-xl space-y-6">
+          <div className="sticky top-28 p-6 rounded-2xl bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-900/50 border border-cyan-500/30 shadow-2xl backdrop-blur-xl space-y-6">
             <div>
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
