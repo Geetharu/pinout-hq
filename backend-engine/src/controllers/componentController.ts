@@ -34,11 +34,30 @@ export const createComponent = async (req: Request, res: Response): Promise<void
   }
 };
 
+export const getComponentsBatch = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({ success: false, message: 'You must provide a valid array of component IDs.' });
+      return;
+    }
+
+    const components = await Component.find({ _id: { $in: ids } });
+
+    res.status(200).json({
+      success: true,
+      count: components.length,
+      data: components,
+    });
+  } catch (error: any) {
+    console.error('[BATCH FETCH ERROR]', error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve batch components.', error: error.message });
+  }
+};
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// ──────────────────────────────────────────────────────────────
-// Zod schema that the Pro model's JSON output must satisfy
-// ──────────────────────────────────────────────────────────────
 const ProArticleSchema = z.object({
   title: z.string().min(1, 'title is required'),
   metaDescription: z.string().min(1, 'metaDescription is required'),
@@ -50,9 +69,6 @@ const ProArticleSchema = z.object({
 
 type ProArticle = z.infer<typeof ProArticleSchema>;
 
-// ──────────────────────────────────────────────────────────────
-// Flagship Pro model regeneration  —  65 536 token limit
-// ──────────────────────────────────────────────────────────────
 async function regenerateWithProModel(
   name: string,
   vendor: string,
@@ -127,7 +143,6 @@ You MUST respond ONLY with a valid JSON object matching this exact schema:
         throw new Error('AI response had no text parts');
       }
 
-      // Parse JSON
       let parsed: Record<string, unknown>;
       try {
         parsed = JSON.parse(rawText);
@@ -138,7 +153,6 @@ You MUST respond ONLY with a valid JSON object matching this exact schema:
         continue;
       }
 
-      // Validate with structured schema
       const validation = ProArticleSchema.safeParse(parsed);
       if (!validation.success) {
         console.error(`⚠️ Schema validation failed on attempt ${attempt}:`, validation.error.format());
@@ -160,10 +174,6 @@ You MUST respond ONLY with a valid JSON object matching this exact schema:
   throw new Error('All Pro model retry attempts exhausted');
 }
 
-// ──────────────────────────────────────────────────────────────
-// Pro article fallback (identical to getFallbackMarkdown but
-// returns a ProArticle-conforming object)
-// ──────────────────────────────────────────────────────────────
 function getProFallbackArticle(name: string, vendor: string): ProArticle {
   const fallback = getFallbackMarkdown(name, vendor);
   return {
@@ -174,9 +184,6 @@ function getProFallbackArticle(name: string, vendor: string): ProArticle {
   };
 }
 
-// ──────────────────────────────────────────────────────────────
-// Regenerate endpoint handler  —  Pro → Flash → static fallback
-// ──────────────────────────────────────────────────────────────
 export const regenerateComponent = async (req: Request, res: Response): Promise<void> => {
   try {
     const component = await Component.findById(req.params.id);
@@ -187,7 +194,6 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
 
     console.log(`🔄 Regeneration requested for [${component.name}] (${component._id})`);
 
-    // Tier 1: Pro model
     let article: ProArticle;
     let modelUsed = 'fallback-static';
     try {
@@ -200,14 +206,12 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
       console.log(`✅ Pro model regeneration succeeded for [${component.name}]`);
     } catch (proError: any) {
       console.warn(`⚠️ Pro model failed (${proError.message}), trying Flash fallback...`);
-      // Tier 2: Flash model
       try {
         const flashResult = await generateDynamicArticleAI(
           component.name,
           component.vendor,
           component.specifications,
         );
-        // The Flash fallback can return an untyped object — validate via schema
         const flashValidation = ProArticleSchema.safeParse(flashResult);
         if (flashValidation.success) {
           article = flashValidation.data;
@@ -218,7 +222,6 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
         }
       } catch (flashError: any) {
         console.warn(`⚠️ Flash fallback also failed (${flashError.message}), using static fallback.`);
-        // Tier 3: static fallback
         article = getProFallbackArticle(component.name, component.vendor);
         modelUsed = 'fallback-static';
       }
@@ -226,7 +229,6 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
 
     const wordCount = article.articleMarkdown.split(/\s+/).filter(Boolean).length;
 
-    // Persist the fresh article onto the component
     component.specifications = {
       ...component.specifications,
       seoArticle: article,
@@ -264,14 +266,6 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
   }
 };
 
-// ──────────────────────────────────────────────────────────────
-// Existing functions below (unchanged)
-// ──────────────────────────────────────────────────────────────
-
-/**
- * Autonomous Magazine-Grade AI Engine (legacy Flash path)
- * Generates humanized 1,800-word editorial reviews with 6 FAQs and zero dashes in prose
- */
 export async function generateDynamicArticleAI(name: string, vendor: string, specs: Record<string, any>) {
   const specsString = JSON.stringify(specs, null, 2);
   
@@ -496,5 +490,52 @@ export const scrapeAndSaveComponent = async (req: Request, res: Response): Promi
   } catch (error: any) {
     console.error('🔥 Fatal error during autonomous scraping pipeline:', error);
     res.status(500).json({ success: false, message: 'Server error during scrape pipeline', error: error.message });
+  }
+};
+
+export const getCommentsByComponentId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const component = await Component.findById(req.params.id).select('comments');
+    if (!component) {
+      res.status(404).json({ success: false, message: 'Hardware component not found' });
+      return;
+    }
+    const sortedComments = (component.comments || []).sort((a: any, b: any) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+    res.status(200).json({ success: true, count: sortedComments.length, data: sortedComments });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Error fetching comments', error: error.message });
+  }
+};
+
+export const addCommentToComponent = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, email, comment } = req.body;
+
+    if (!name || !email || !comment) {
+      res.status(400).json({ success: false, message: 'Please provide name, email, and comment' });
+      return;
+    }
+
+    const component = await Component.findById(req.params.id);
+    if (!component) {
+      res.status(404).json({ success: false, message: 'Hardware component not found' });
+      return;
+    }
+
+    const newComment = {
+      name,
+      email,
+      comment,
+      createdAt: new Date(),
+    };
+
+    component.comments.push(newComment);
+    await component.save();
+
+    res.status(201).json({ success: true, message: 'Comment added successfully', data: newComment });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: 'Error adding comment', error: error.message });
   }
 };

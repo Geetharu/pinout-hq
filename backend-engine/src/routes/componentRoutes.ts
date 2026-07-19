@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import { getComponents, getComponentById, createComponent, scrapeAndSaveComponent, regenerateComponent } from '../controllers/componentController';
+import { 
+  getComponents, 
+  getComponentById, 
+  createComponent, 
+  scrapeAndSaveComponent, 
+  regenerateComponent, 
+  getComponentsBatch,
+  getCommentsByComponentId, 
+  addCommentToComponent 
+} from '../controllers/componentController';
 import { triggerBulkRegeneration } from '../controllers/queueController';
 
 const router = Router();
@@ -11,16 +20,20 @@ router.route('/')
 router.route('/scrape')
   .post(scrapeAndSaveComponent);
 
-// Background job queue endpoint for bulk AI regeneration
 router.route('/bulk-regenerate')
   .post(triggerBulkRegeneration);
 
-// Route for individual SEO hardware pages
+router.route('/batch')
+  .post(getComponentsBatch);
+
 router.route('/:id')
   .get(getComponentById);
 
-// Pro model regeneration endpoint
 router.route('/:id/regenerate')
   .post(regenerateComponent);
+
+router.route('/:id/comments')
+  .get(getCommentsByComponentId)
+  .post(addCommentToComponent);
 
 export default router;

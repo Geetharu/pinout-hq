@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-deep-slate: #0F172A;
@@ -10,7 +11,33 @@
   --color-short-circuit-red: #F43F5E;
 }
 
+/* Core Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: #0F172A;
   color: #F8FAFC;
+  overflow-x: hidden;
+}
+
+/* Custom Webkit Scrollbar for Engineering Matrix Tables and Code Boxes */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0F172A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+  border: 1px solid #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00E5FF;
 }

@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Logo } from "@/components/Logo";
 import ArticleRenderer from "@/components/ArticleRenderer";
 import PinoutDiagram from "@/components/PinoutDiagram";
+import CommunityComments from "@/components/CommunityComments";
 
 interface HardwareComponent {
   _id: string;
@@ -194,37 +195,8 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             )}
           </div>
 
-          {/* Community Discussion & Comment Form Block */}
-          <div className="p-8 rounded-2xl bg-slate-900/50 border border-slate-800 space-y-6 mt-12">
-            <div>
-              <h3 className="text-xl font-bold font-mono text-slate-100">
-                Join the Discussion
-              </h3>
-              <p className="text-xs font-mono text-slate-400 mt-1">
-                Have you integrated the {item.name} in your custom PCB or IoT project? Share your feedback and wiring tips below!
-              </p>
-            </div>
-
-            <form className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1">Name *</label>
-                  <input type="text" placeholder="Engineer Name" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono" />
-                </div>
-                <div>
-                  <label className="block text-xs font-mono text-slate-400 mb-1">Email *</label>
-                  <input type="email" placeholder="developer@company.com" className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-mono text-slate-400 mb-1">Comment *</label>
-                <textarea rows={4} placeholder="Share your hardware troubleshooting steps or project schematics..." className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-500 font-mono"></textarea>
-              </div>
-              <button type="button" className="py-2.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono font-bold text-xs rounded-lg transition shadow-[0_0_15px_rgba(0,229,255,0.2)]">
-                Post Engineering Comment &rarr;
-              </button>
-            </form>
-          </div>
+          {/* Functional Community Discussion Component replacing the old static HTML form */}
+          <CommunityComments componentId={item._id} componentName={item.name} />
 
         </div>
 
