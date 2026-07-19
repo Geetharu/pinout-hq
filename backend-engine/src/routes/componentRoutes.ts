@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getComponents, getComponentById, createComponent, scrapeAndSaveComponent, regenerateComponent } from '../controllers/componentController';
+import { triggerBulkRegeneration } from '../controllers/queueController';
 
 const router = Router();
 
@@ -10,7 +11,11 @@ router.route('/')
 router.route('/scrape')
   .post(scrapeAndSaveComponent);
 
-// NEW: Route for individual SEO hardware pages
+// Background job queue endpoint for bulk AI regeneration
+router.route('/bulk-regenerate')
+  .post(triggerBulkRegeneration);
+
+// Route for individual SEO hardware pages
 router.route('/:id')
   .get(getComponentById);
 

@@ -5,6 +5,7 @@ import { connectDatabase } from './config/db';
 import { connectRedis } from './config/redis';
 import { createMcpRouter } from './mcp/server';
 import componentRoutes from './routes/componentRoutes';
+import { scheduleDailyPriceSync } from './workers/cronWorker';
 
 const app: Application = express();
 
@@ -41,6 +42,11 @@ const startServer = async () => {
       connectDatabase(),
       connectRedis()
     ]);
+
+    // Initialize nightly background cron worker for vendor price and stock synchronization
+    scheduleDailyPriceSync().catch((err) => {
+      console.error('⚠️ Failed to initialize nightly cron scheduler:', err);
+    });
 
     app.listen(env.PORT, () => {
       console.log(`🚀 PinoutHQ Server live on port ${env.PORT} in [${env.NODE_ENV}] mode`);

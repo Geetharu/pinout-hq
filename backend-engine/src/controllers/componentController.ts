@@ -272,7 +272,7 @@ export const regenerateComponent = async (req: Request, res: Response): Promise<
  * Autonomous Magazine-Grade AI Engine (legacy Flash path)
  * Generates humanized 1,800-word editorial reviews with 6 FAQs and zero dashes in prose
  */
-async function generateDynamicArticleAI(name: string, vendor: string, specs: Record<string, any>) {
+export async function generateDynamicArticleAI(name: string, vendor: string, specs: Record<string, any>) {
   const specsString = JSON.stringify(specs, null, 2);
   
   const systemPrompt = `You are the Editor in Chief and lead hardware journalist for PinoutHQ.

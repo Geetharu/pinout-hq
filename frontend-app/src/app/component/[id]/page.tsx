@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import ReactMarkdown from "react-markdown";
 import { Logo } from "@/components/Logo";
+import ArticleRenderer from "@/components/ArticleRenderer";
+import PinoutDiagram from "@/components/PinoutDiagram";
 
 interface HardwareComponent {
   _id: string;
@@ -165,41 +166,13 @@ export default async function ComponentDetailPage({ params }: { params: Promise<
             </div>
           </section>
 
-          {/* Dynamic Markdown Article Body (No Rigid Templates!) */}
-          <article className="prose prose-invert max-w-none text-slate-300 font-sans leading-relaxed space-y-6">
-            <ReactMarkdown
-              components={{
-                h2: ({ node, ...props }) => (
-                  <h2 className="text-2xl font-bold text-slate-100 font-mono border-b border-slate-800 pb-2 mt-10 mb-4" {...props} />
-                ),
-                h3: ({ node, ...props }) => (
-                  <h3 className="text-lg font-bold text-cyan-400 font-mono mt-6 mb-2" {...props} />
-                ),
-                p: ({ node, ...props }) => (
-                  <p className="text-base text-slate-300 leading-relaxed my-3" {...props} />
-                ),
-                ul: ({ node, ...props }) => (
-                  <ul className="list-disc list-inside space-y-2 text-slate-300 my-4 pl-2 font-mono text-sm" {...props} />
-                ),
-                code: ({ inline, ...props }: any) => 
-                  inline ? (
-                    <code className="bg-slate-900 text-cyan-300 px-1.5 py-0.5 rounded text-xs font-mono border border-slate-800" {...props} />
-                  ) : (
-                    <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-slate-900 my-6 shadow-2xl">
-                      <div className="flex items-center justify-between px-4 py-2 bg-slate-800/80 border-b border-slate-800 font-mono text-xs text-slate-400">
-                        <span>PlatformIO / Arduino Code Harness</span>
-                        <span className="text-cyan-400">Ready to Compile</span>
-                      </div>
-                      <pre className="p-5 text-xs md:text-sm font-mono text-cyan-300 overflow-x-auto leading-relaxed m-0 bg-transparent">
-                        <code {...props} />
-                      </pre>
-                    </div>
-                  )
-              }}
-            >
-              {seo.articleMarkdown}
-            </ReactMarkdown>
-          </article>
+          {/* Interactive Pinout Visualizer & Multiplexer */}
+          <PinoutDiagram moduleName={item.name} pinCount={pins} />
+
+          {/* Dynamic Markdown Article Body using the new ArticleRenderer */}
+          <div className="mt-8 bg-slate-950/60 p-6 md:p-10 rounded-2xl border border-slate-800/80 shadow-xl">
+            <ArticleRenderer markdownContent={seo.articleMarkdown || ''} />
+          </div>
 
           {/* Categories and Tags Footer */}
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

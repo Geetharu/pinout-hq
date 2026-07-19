@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import MatrixFilterGrid from "@/components/MatrixFilterGrid";
 
 // Define the TypeScript interface matching our MongoDB schema
 interface HardwareComponent {
@@ -64,9 +64,9 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* Scraped Hardware Matrix Grid Section */}
+      {/* Interactive Scraped Hardware Matrix Grid Section */}
       <div className="w-full max-w-6xl mt-8">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-8">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-2">
           <h2 className="text-lg md:text-xl font-mono font-semibold text-slate-200">
             Scraped Hardware Matrix
           </h2>
@@ -75,84 +75,8 @@ export default async function Home() {
           </span>
         </div>
 
-        {components.length === 0 ? (
-          <div className="w-full py-16 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/50">
-            <p className="text-slate-500 font-mono text-sm">
-              No hardware components found in the database. Trigger your n8n automation pipeline to populate the grid!
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {components.map((item) => (
-              <Link 
-                href={`/component/${item._id}`} 
-                key={item._id}
-                className="flex flex-col justify-between p-6 rounded-xl bg-slate-800/40 border border-slate-700/60 hover:border-cyan-500/80 hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all duration-300 shadow-lg group backdrop-blur-sm cursor-pointer"
-              >
-                <div>
-                  {/* Category and Stock Badges */}
-                  <div className="flex items-start justify-between gap-2 mb-3">
-                    <span className="px-2.5 py-1 rounded bg-slate-700/80 text-[10px] font-mono text-cyan-300 uppercase tracking-wider">
-                      {item.category}
-                    </span>
-                    <span className={`px-2.5 py-1 rounded text-[10px] font-mono font-medium ${
-                      item.inStock 
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                        : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                    }`}>
-                      {item.inStock ? 'IN STOCK' : 'OUT OF STOCK'}
-                    </span>
-                  </div>
-
-                  {/* Component Title */}
-                  <h3 className="text-lg font-bold text-slate-100 group-hover:text-cyan-400 transition-colors line-clamp-2 mb-1">
-                    {item.name}
-                  </h3>
-                  
-                  <p className="text-xs font-mono text-slate-400 mb-4">
-                    Vendor: <span className="text-slate-300 font-semibold">{item.vendor}</span>
-                  </p>
-
-                  {/* Dynamic Specifications Table */}
-                  <div className="space-y-1.5 my-4 border-t border-slate-700/40 pt-3">
-                    <p className="text-[11px] font-mono text-slate-500 uppercase tracking-wider mb-2">
-                      Technical Specs
-                    </p>
-                    <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
-                      {item.specifications && Object.entries(item.specifications).map(([key, value]) => {
-                        if (key === 'sourceUrl' || key === 'lastScrapedAt' || key === 'scrapedPrice' || key === 'currency') return null;
-                        return (
-                          <div key={key} className="flex justify-between text-xs py-1 border-b border-slate-800/60 font-mono">
-                            <span className="text-slate-400 truncate max-w-[120px]">{key}:</span>
-                            <span className="text-slate-200 font-medium truncate max-w-[140px]">
-                              {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Card Footer Details */}
-                <div className="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between font-mono text-xs">
-                  <span className="text-slate-500">
-                    Pins: <span className="text-slate-300 font-semibold">{item.pinCount || 'N/A'}</span>
-                  </span>
-                  {item.specifications?.scrapedPrice ? (
-                    <span className="text-emerald-400 font-bold text-sm bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-500/20">
-                      ${item.specifications.scrapedPrice}
-                    </span>
-                  ) : (
-                    <span className="text-cyan-400 text-xs font-bold group-hover:underline">
-                      View Specs &rarr;
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Client side Live Search, Vendor Filtering, and Grid Display */}
+        <MatrixFilterGrid initialComponents={components} />
       </div>
     </main>
   );
