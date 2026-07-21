@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next';
 
-export default async function sitemap() {
+// Tells Next.js to skip static build caching for the sitemap generator
+export const dynamic = 'force-dynamic';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
 

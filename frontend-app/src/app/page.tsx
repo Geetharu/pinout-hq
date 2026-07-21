@@ -1,6 +1,9 @@
 import { Logo } from "@/components/Logo";
 import MatrixFilterGrid from "@/components/MatrixFilterGrid";
 
+// Tells Next.js to skip static build caching and run this page dynamically on every request
+export const dynamic = 'force-dynamic';
+
 // Define the TypeScript interface matching our MongoDB schema
 interface HardwareComponent {
   _id: string;

@@ -5,6 +5,9 @@ import ArticleRenderer from "@/components/ArticleRenderer";
 import PinoutDiagram from "@/components/PinoutDiagram";
 import CommunityComments from "@/components/CommunityComments";
 
+// Tells Next.js to skip static build caching for individual hardware pages
+export const dynamic = 'force-dynamic';
+
 interface HardwareComponent {
   _id: string;
   name: string;
