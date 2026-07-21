@@ -19,7 +19,7 @@ interface HardwareComponent {
 // Fetch live data directly from your PinoutHQ backend engine
 async function getComponents(): Promise<HardwareComponent[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     const res = await fetch(`${baseUrl}/api/v1/components`, {
       cache: 'no-store', // Ensures fresh data is pulled immediately after every automated scrape
     });

@@ -21,7 +21,7 @@ interface HardwareComponent {
 
 async function getComponentDetails(id: string): Promise<HardwareComponent | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
     const res = await fetch(`${baseUrl}/api/v1/components/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
     const json = await res.json();
