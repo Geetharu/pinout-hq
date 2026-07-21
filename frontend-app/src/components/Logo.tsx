@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
+export const Logo = ({ className = "w-8 h-8", showText = false }: { className?: string; showText?: boolean }) => (
   <div className="flex items-center gap-2.5 select-none">
     <svg 
       viewBox="0 0 36 36" 
@@ -16,8 +16,10 @@ export const Logo = ({ className = "w-8 h-8" }: { className?: string }) => (
       <path d="M14 2V6M22 2V6" className="stroke-cyan-400 drop-shadow-[0_0_6px_rgba(0,229,255,0.8)]" strokeWidth="2" strokeLinecap="round" />
     </svg>
 
-    <span className="font-mono text-xl font-bold tracking-tight text-slate-50">
-      Pinout<span className="text-cyan-400">HQ</span>
-    </span>
+    {showText && (
+      <span className="font-mono text-xl font-bold tracking-tight text-slate-50">
+        Pinout<span className="text-cyan-400">HQ</span>
+      </span>
+    )}
   </div>
 );

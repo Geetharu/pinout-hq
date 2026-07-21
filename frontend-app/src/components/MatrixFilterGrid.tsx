@@ -42,10 +42,10 @@ export default function MatrixFilterGrid({ initialComponents = [] }: MatrixFilte
   }, [initialComponents, searchQuery, selectedVendor, stockOnly]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-8 my-8 font-mono">
+    <div className="w-full max-w-6xl mx-auto space-y-8 my-8 font-sans">
       
       {/* Search and Filter Control Bar */}
-      <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl space-y-4">
+      <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl space-y-4 font-mono">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           {/* Live Text Input */}
@@ -94,14 +94,14 @@ export default function MatrixFilterGrid({ initialComponents = [] }: MatrixFilte
       </div>
 
       {/* Grid Results Counters */}
-      <div className="flex items-center justify-between px-2 text-xs text-slate-400">
+      <div className="flex items-center justify-between px-2 text-xs text-slate-400 font-mono">
         <span>Showing <strong className="text-cyan-400 font-bold">{filteredComponents.length}</strong> verified hardware modules</span>
         <span>Telemetry Matrix Live</span>
       </div>
 
       {/* Dynamic Grid Layout */}
       {filteredComponents.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-slate-950 border border-slate-800 text-slate-400 space-y-3">
+        <div className="p-12 text-center rounded-2xl bg-slate-950 border border-slate-800 text-slate-400 space-y-3 font-mono">
           <Cpu className="w-10 h-10 text-slate-600 mx-auto" />
           <div className="text-base font-bold text-slate-300">No matching microcontrollers detected in the matrix</div>
           <div className="text-xs text-slate-500">Try loosening your vendor filters or clearing your text search query above.</div>
@@ -117,11 +117,11 @@ export default function MatrixFilterGrid({ initialComponents = [] }: MatrixFilte
           {filteredComponents.map(item => (
             <Link
               key={item._id}
-              href={`/component/${item._id}`} // Adjust to /components/${item._id} if your route folder is plural!
-              className="group p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-500/50 transition duration-300 flex flex-col justify-between space-y-6 shadow-xl hover:shadow-[0_0_30px_rgba(0,229,255,0.15)] relative overflow-hidden"
+              href={`/component/${item._id}`}
+              className="group p-6 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-500/50 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xl hover:shadow-[0_10px_30px_rgba(0,229,255,0.12)] relative overflow-hidden"
             >
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between font-mono">
                   <span className="text-[10px] uppercase font-bold px-2.5 py-1 rounded bg-slate-900 text-cyan-400 border border-slate-800">
                     {item.vendor || 'Generic'}
                   </span>
@@ -136,15 +136,15 @@ export default function MatrixFilterGrid({ initialComponents = [] }: MatrixFilte
                   )}
                 </div>
 
-                <h3 className="text-xl font-bold text-slate-100 group-hover:text-cyan-400 transition duration-200 leading-snug">
+                <h3 className="text-lg md:text-xl font-bold font-sans tracking-tight text-slate-100 group-hover:text-cyan-400 transition duration-200 leading-snug">
                   {item.name}
                 </h3>
-                <div className="text-xs text-slate-400 font-sans line-clamp-2">
+                <div className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-2">
                   Comprehensive engineering review, pinout routing table, and C++ PlatformIO test harness for rapid IoT edge prototyping.
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-900 flex items-center justify-between text-xs text-slate-400 group-hover:text-slate-200 transition">
+              <div className="pt-4 border-t border-slate-900/80 flex items-center justify-between text-xs text-slate-400 group-hover:text-slate-200 transition font-mono">
                 <span>{item.pinCount || 38} Physical Pins</span>
                 <span className="flex items-center gap-1 font-bold text-cyan-400 group-hover:translate-x-1 transition duration-200">
                   Inspect Matrix <ArrowUpRight className="w-3.5 h-3.5" />
